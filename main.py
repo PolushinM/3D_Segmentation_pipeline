@@ -26,13 +26,16 @@ SOURCE_FOLDER = '/home/maksim/AIDiagnostic/subset/'
 def main():
     set_seeds(0)
 
+    # Get list of samples from data directory
     names = []
     for folder in Path(os.path.join(SOURCE_FOLDER, 'subset')).glob('*'):
         names.append(folder.name)
 
+    # Add augmentations
     train_transforms = A.Compose([A.HorizontalFlip(p=0.5), ToTensorV2()])
     val_transforms = A.Compose([ToTensorV2()])
 
+    # Train - test split.
     train_names, val_names = train_test_split(names, test_size=0.2)
 
     train_dataset = ImageFolder3D(SOURCE_FOLDER, train_names, transforms=train_transforms, load_sample_fn=load_sample)
@@ -45,6 +48,7 @@ def main():
                                                device=DEVICE,
                                                sampler=None)
 
+    # Train loop
     torch.cuda.empty_cache()
     history = train(model=DicomUNet(scale=MODEL_SCALE),
                     loss_fn=dice_loss, device=DEVICE,
